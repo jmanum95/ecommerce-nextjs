@@ -6,8 +6,8 @@ import { IoIosArchive, IoMdPricetag } from "react-icons/io";
 interface IProps {
   id: number;
   name: string;
-  price: number;
-  stock: number;
+  price: string;
+  stock: string;
   imageUrl?: string;
 }
 

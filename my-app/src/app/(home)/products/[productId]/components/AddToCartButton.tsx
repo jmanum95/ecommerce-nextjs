@@ -7,11 +7,15 @@ interface IProps {
 }
 
 const AddToCartButton = ({ product }: IProps) => {
-  const userData = localStorage.getItem("userData");
+  let userData;
+  if (typeof window !== "undefined") {
+    userData = localStorage.getItem("userData");
+  }
 
   const addToCart = () => {
     const localCart = localStorage.getItem("cart");
-    const cart: IProduct[] = localCart !== null ? JSON.parse(localCart) : null;
+    const cart: IProduct[] =
+      localCart !== null ? JSON.parse(localCart ?? "") : null;
     if (cart) {
       const existingProduct = cart.find(
         (cartProduct) => cartProduct.id === product.id

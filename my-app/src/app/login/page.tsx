@@ -1,19 +1,13 @@
 "use client";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "react-toastify";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
+import { login } from "./actions";
+import { toast } from "react-toastify";
+import { redirect } from "next/navigation";
 
 const LoginPage = () => {
-  const router = useRouter();
-  const [signInForm, setSignInForm] = useState<{
-    email: string;
-    password: string;
-  }>({
-    email: "",
-    password: "",
-  });
+  const [state, loginAction] = useActionState(login, undefined);
+
   const [formErrors, setFormErrors] = useState<{
     email: string;
     password: string;
@@ -21,26 +15,6 @@ const LoginPage = () => {
     email: "",
     password: "",
   });
-
-  const signInUser = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
-    try {
-      const { data } = await axios.post(`${serverUrl}/users/login`, {
-        email: signInForm.email,
-        password: signInForm.password,
-      });
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userData", JSON.stringify(data.user));
-      localStorage.setItem("cart", JSON.stringify([]));
-      
-      toast.success("Login successful");
-      router.push("/products");
-    } catch (error: any) {
-      toast.error(`Error: ${error.response.data.message}`);
-    }
-  };
 
   const validatePassword = (value: string) => {
     const regex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
@@ -73,23 +47,38 @@ const LoginPage = () => {
     if (event.target.name === "password") {
       validatePassword(event.target.value);
     }
-    setSignInForm({
-      ...signInForm,
-      [event.target.name]: event.target.value,
-    });
   };
+
+  useEffect(() => {
+    if (state && state.error) {
+      toast.error(`Error: ${state.error}`);
+      setFormErrors({
+        email: "",
+        password: "",
+      });
+    }
+    if (state && state.success) {
+      localStorage.setItem("token", state.data.token);
+      localStorage.setItem("userData", JSON.stringify(state.data.user));
+      localStorage.setItem("cart", JSON.stringify([]));
+      toast.success("User logged in succesfuly");
+      redirect("/products");
+    }
+  }, [state]);
 
   return (
     <div className="flex flex-col items-center w-full h-screen justify-center">
       <div className="flex flex-col justify-center items-center bg-whitey/30 backdrop-blur-md rounded-md text-xl w-11/12 md:w-1/3 py-4 shadow-md">
         <h2 className="text-7xl lg:text-8xl mb-4  truncate">Tech store</h2>
-        <form className="flex flex-col gap-1 justify-center items-center p-4">
+        <form
+          action={loginAction}
+          className="flex flex-col gap-1 justify-center items-center p-4"
+        >
           <div className="flex gap-2 items-center w-full">
             <input
               type="text"
               id="email"
               name="email"
-              value={signInForm.email}
               placeholder="Email"
               onChange={handleChangeForm}
               className="w-full px-2 py-1 border rounded-md text-black"
@@ -111,7 +100,6 @@ const LoginPage = () => {
               type="password"
               id="password"
               name="password"
-              value={signInForm.password}
               placeholder="Password"
               onChange={handleChangeForm}
               className="w-full px-2 py-1 border rounded-md text-black"
@@ -130,11 +118,7 @@ const LoginPage = () => {
           </div>
           <button
             className="bg-primary text-xl rounded-md py-2 px-8 font-semibold enabled:hover:brightness-105 disabled:saturate-0 transition-all"
-            onClick={signInUser}
-            disabled={
-              Object.values(formErrors).some((error) => error !== "") ||
-              Object.values(signInForm).some((field) => field === "")
-            }
+            disabled={Object.values(formErrors).some((error) => error !== "")}
           >
             Log in
           </button>
