@@ -8,8 +8,7 @@ Este es un proyecto de eCommerce desarrollado con Next.js. Permite a los usuario
 - **TypeScript** - Tipado estático para JavaScript
 - **Tailwind CSS** - Framework de estilos CSS
 - **PostgreSQL** - Base de datos relacional
-- **Prisma** - ORM para manejar la base de datos
-- **Mercado Pago API** - Integración de pagos
+- **Express** - Para manejar la base de datos
 - **NextAuth.js** - Autenticación de usuarios
 - **React Query** - Manejo de estado asincrónico
 
